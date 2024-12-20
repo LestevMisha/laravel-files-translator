@@ -1,7 +1,7 @@
 {
     "name": "mishalestev/laravel-files-translator",
     "description": "Extract translations from HTML/Blade files and generate translation files.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "library",
     "keywords": [
         "laravel-files-translator",

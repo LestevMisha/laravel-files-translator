@@ -50,18 +50,8 @@ class ExtractTranslations extends Command
         $content = File::get($inputFile);
         $compiledContent = $this->bladeDirectivesToPHP($content);
 
-        // Check if the content has a basic HTML structure
-        if (!preg_match('/<html.*?>/i', $compiledContent)) {
-            // If no <html> tag is found, wrap the content in a basic structure
-            $compiledContent = "<!DOCTYPE html>\n" .
-                "<html lang='en'>\n" .
-                "<head><meta charset='UTF-8'></head>\n" .
-                "<body>\n" .
-                $compiledContent .
-                "\n</body>\n</html>";
-        }
         $dom = new DOMDocument;
-        @$dom->loadHTML($compiledContent, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        @$dom->loadHTML($this->setHTMLEncoding($compiledContent), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         $xpath = new DOMXPath($dom);
         $nodes = $xpath->query('//text()[not(ancestor::style)]');
 
@@ -91,7 +81,7 @@ class ExtractTranslations extends Command
         if ($force) {
             // Directly modify the input file
             $originalDOM = new DOMDocument();
-            @$originalDOM->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+            @$originalDOM->loadHTML($this->setHTMLEncoding($content), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
             $originalPath = new DOMXpath($originalDOM);
 
             // replacing each text with corresponding translation key
@@ -189,5 +179,19 @@ class ExtractTranslations extends Command
         // Strip PHP code (which includes compiled Blade directives).
         $cleanedTemplate = preg_replace('/<\?php.*?\?>/s', '', $compiledTemplate);
         return $cleanedTemplate;
+    }
+
+    public function setHTMLEncoding($html)
+    {
+        if (preg_match('/<html.*?>/i', $html)) {
+            return $html;
+        } else {
+            return "<!DOCTYPE html>\n" .
+                "<html lang='en'>\n" .
+                "<head><meta charset='UTF-8'></head>\n" .
+                "<body>\n" .
+                $html .
+                "\n</body>\n</html>";
+        }
     }
 }
